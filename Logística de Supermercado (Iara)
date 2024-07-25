@@ -1,0 +1,298 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <locale.h>
+
+#define limite_USUARIOS 100
+#define limite_ITENS 100
+#define limite_NOME_TAMANHO 50
+#define limite_EMAIL_TAMANHO 80
+#define limite_SENHA_TAMANHO 20
+
+typedef struct {
+    char nome[limite_NOME_TAMANHO];
+    char senha[limite_SENHA_TAMANHO];
+    char email[limite_EMAIL_TAMANHO];
+} Usuario;
+
+typedef struct {
+    char nome[limite_NOME_TAMANHO];
+    float preco;
+    int quantidade;
+} Item;
+
+int login(Usuario usuarios[], int num_usuarios) {
+    char nome[limite_NOME_TAMANHO];
+    char senha[limite_SENHA_TAMANHO];
+
+    printf("Login\n");
+    printf("Nome de usuário:");
+    scanf("%s", nome);
+    printf("Senha:");
+    scanf("%s", senha);
+
+    for (int i = 0; i < num_usuarios; i++) {
+        if (strcmp(usuarios[i].nome, nome) == 0 && strcmp(usuarios[i].senha, senha) == 0) {
+            printf("Login realizado com sucesso!\n");
+            return 1;
+        }
+    }
+
+    printf("Nome de usuário ou senha inválidos. Por favor, tente novamente.\n");
+    return 0;
+}
+
+int validar_email(char email[], Usuario usuarios[], int num_usuarios) {
+    if (strlen(email) >= limite_EMAIL_TAMANHO || strchr(email, '@') == NULL) {
+        printf ("E-mail inválido se não contiver '@' ou exceder o comprimento limite");
+        return 0; 
+    }
+
+    for (int i = 0; i < num_usuarios; i++) {
+        if (strcmp(usuarios[i].email, email) == 0) {
+            printf("E-mail já cadastrado");
+            printf("E-mail válido");
+            return 0; 
+        }
+    }
+
+    return 1; 
+}
+
+void cadastrar_usuario(Usuario usuarios[], int *num_usuarios) {
+    char nome[limite_NOME_TAMANHO];
+    char senha[limite_SENHA_TAMANHO];
+    char email[limite_EMAIL_TAMANHO];
+
+    printf("Digite o cadastro de novo usuário\n");
+    printf("Digite o nome de usuário: ");
+    scanf("%s", nome);
+    printf(" Digite uma senha: ");
+    scanf("%s", senha);
+    printf(" Digite E-mail: ");
+    scanf("%s", email);
+
+    if (!validar_email(email, usuarios, *num_usuarios)) {
+        printf("E-mail inválido ou já cadastrado. Por favor, forneça um e-mail válido.\n");
+        return;
+    }
+
+    strcpy(usuarios[*num_usuarios].nome, nome);
+    strcpy(usuarios[*num_usuarios].senha, senha);
+    strcpy(usuarios[*num_usuarios].email, email);
+
+    (*num_usuarios)++;
+    printf("Cadastro realizado com sucesso!\n");
+}
+
+void excluir_usuario(Usuario usuarios[], int *num_usuarios) {
+    char nome[limite_NOME_TAMANHO];
+    printf("Digite o nome do usuário que deseja excluir: ");
+    scanf("%s", nome);
+
+    int encontrado = 0;
+    for (int i = 0; i < *num_usuarios; i++) {
+        if (strcmp(usuarios[i].nome, nome) == 0) {
+            
+            for (int j = i; j < *num_usuarios - 1; j++) {
+                strcpy(usuarios[j].nome, usuarios[j + 1].nome);
+                strcpy(usuarios[j].senha, usuarios[j + 1].senha);
+                strcpy(usuarios[j].email, usuarios[j + 1].email);
+            }
+            (*num_usuarios)--;
+            printf("Usuário excluído com sucesso!\n");
+            encontrado = 1;
+            break;
+        }
+    }
+
+    if (!encontrado) {
+        printf("Usuário não encontrado.\n");
+    }
+}
+
+
+int exibir_opcoes_iniciais() {
+    int opcao;
+    printf("\nOpções iniciais:\n");
+    printf("1. Cadastrar usuário\n");
+    printf("2. Login\n");
+    printf("3. Excluir cadastro\n");
+    printf("Escolha uma opção: ");
+    scanf("%d", &opcao);
+    return opcao;
+}
+
+void mensagem_boas_vindas() {
+    printf("Bem-vindo ao Sistema de Compras!\n");
+}
+
+int exibir_menu() {
+    int escolha;
+    printf("\nMenu:\n");
+    printf("1. Cadastrar item\n");
+    printf("2. Listar itens\n");
+    printf("3. Editar item\n");
+    printf("4. Excluir item\n");
+    printf("5. Buscar item\n");
+    printf("0. Sair\n");
+    printf("Escolha uma opção: ");
+    scanf("%d", &escolha);
+    return escolha;
+}
+
+void cadastrar_item(Item produtos[], int *num_produtos) {
+    if (*num_produtos >= limite_ITENS) {
+        printf("Limite máximo de itens alcançado. Não é possível cadastrar mais itens.\n");
+        return;
+    }
+    printf("Digite o nome do item: ");
+    scanf("%s", produtos[*num_produtos].nome);
+    printf("Digite o preço do item: ");
+    scanf("%f", &produtos[*num_produtos].preco);
+    printf("Digite a quantidade do item: ");
+    scanf("%d", &produtos[*num_produtos].quantidade);
+
+    (*num_produtos)++;
+    printf("Item cadastrado com sucesso!\n");
+}
+    
+
+void listar_itens(Item produtos[], int num_produtos) {
+    if (num_produtos == 0) {
+        printf("Não há itens cadastrados.\n");
+        return 1;
+    }
+
+    printf("Lista de Itens:\n");
+    for (int i = 0; i < num_produtos; i++) {
+        printf("Nome: %s | Preço: %.2f | Quantidade: %d\n", produtos[i].nome, produtos[i].preco, produtos[i].quantidade);
+    }
+}
+
+void editar_item(Item produtos[], int num_produtos) {
+    char nome[limite_NOME_TAMANHO];
+    printf("Digite o nome do item que deseja editar:");
+    scanf("%s", nome);
+
+    for (int i = 0; i < num_produtos; i++) {
+        if (strcmp(produtos[i].nome, nome) == 0) {
+            printf("Digite o novo nome do item: ");
+            scanf("%s", produtos[i].nome);
+            printf("Digite o novo preço do item: ");
+            scanf("%f", &produtos[i].preco);
+            printf("Digite a nova quantidade do item: ");
+            scanf("%d", &produtos[i].quantidade);
+            printf("Item editado com sucesso!\n");
+            return;
+        }
+    }
+
+    printf("Item não encontrado.\n");
+}
+
+void excluir_item(Item produtos[], int *num_produtos) {
+    char nome[limite_NOME_TAMANHO];
+    printf("Digite o nome do item que deseja excluir: ");
+    scanf("%s", nome);
+
+    int encontrado = 0;
+    for (int i = 0; i < *num_produtos; i++) {
+        if (strcmp(produtos[i].nome, nome) == 0) {
+            for (int j = i; j < *num_produtos - 1; j++) {
+                strcpy(produtos[j].nome, produtos[j + 1].nome);
+                produtos[j].preco = produtos[j + 1].preco;
+                produtos[j].quantidade = produtos[j + 1].quantidade;
+            }
+            (*num_produtos)--;
+            printf("Item excluído com sucesso!\n");
+            encontrado = 1;
+            break;
+        }
+    }
+
+    if (!encontrado) {
+        printf("Item não encontrado.\n");
+    }
+}
+
+void buscar_item(Item produtos[], int num_produtos) {
+    char nome[limite_NOME_TAMANHO];
+    printf("Digite o nome do item que deseja buscar: ");
+    scanf("%s", nome);
+
+    int encontrado = 0;
+    for (int i = 0; i < num_produtos; i++) {
+        if (strcmp(produtos[i].nome, nome) == 0) {
+            printf("Item encontrado:\n");
+            printf("Nome: %s | Preço: %.2f | Quantidade: %d\n", produtos[i].nome, produtos[i].preco, produtos[i].quantidade);
+            encontrado = 1;
+            break;
+        }
+    }
+
+    if (!encontrado) {
+        printf("Item não encontrado.\n");
+    }
+}
+
+int main() {
+    setlocale(LC_ALL, "Portuguese"); 
+
+    Usuario usuarios[limite_USUARIOS];
+    Item produtos[limite_ITENS];
+    int num_usuarios = 0;
+    int num_produtos = 0;
+
+    int opcao;
+    do {
+        opcao = exibir_opcoes_iniciais();
+
+        switch (opcao) {
+            case 1:
+                cadastrar_usuario(usuarios, &num_usuarios);
+                break;
+            case 2:
+                // Login
+                while (!login(usuarios, num_usuarios));
+                break;
+            case 3:
+                excluir_usuario(usuarios, &num_usuarios);
+                break;
+            default:
+                printf("Opção inválida. Por favor, escolha uma opção válida.\n");
+        }
+    } while (opcao != 2);
+
+    mensagem_boas_vindas();
+
+    int escolha;
+    do {
+        escolha = exibir_menu();
+
+        switch (escolha) {
+            case 1:
+                cadastrar_item(produtos, &num_produtos);
+                break;
+            case 2:
+                listar_itens(produtos, num_produtos);
+                break;
+            case 3:
+                editar_item(produtos, num_produtos);
+                break;
+            case 4:
+                excluir_item(produtos, &num_produtos);
+                break;
+            case 5:
+                buscar_item(produtos, num_produtos);
+                break;
+            case 0:
+                printf("Saindo...\n");
+                break;
+            default:
+                printf("Opção inválida. Por favor, escolha uma opção válida.\n");
+        }
+    } while (escolha != 0);
+
+    return 0;
+}
